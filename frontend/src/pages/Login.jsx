@@ -1,4 +1,5 @@
-import { useState, useContext, useEffect } from "react";
+
+import { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../services/api/authApi";
 import { AuthContext } from "../components/context/AuthContext";
@@ -12,41 +13,52 @@ function Login() {
         password: "",
     });
 
-    // Clear form whenever Login page/component loads
-    useEffect(() => {
-        setForm({
-            email: "",
-            password: "",
-        });
-    }, []);
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
+        const { name, value } = e.target;
+
         setForm((prev) => ({
             ...prev,
-            [e.target.name]: e.target.value,
+            [name]: value,
         }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        try {
-            const res = await API.post("/login", form);
+        if (loading) return;
 
-            // Save login information through AuthContext
+        setLoading(true);
+
+        try {
+            const res = await API.post("/auth/login", {
+                email: form.email.trim(),
+                password: form.password,
+            });
+
+            if (!res.data?.token || !res.data?.user) {
+                throw new Error("Invalid login response from server");
+            }
+
             login(res.data.token, res.data.user);
 
-            // Clear form after successful login
             setForm({
                 email: "",
                 password: "",
             });
 
             alert("Login Successful");
-
             navigate("/");
         } catch (err) {
-            alert(err.response?.data?.message || "Login Failed");
+            const message =
+                err.response?.data?.message ||
+                err.message ||
+                "Login Failed";
+
+            alert(message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -57,13 +69,16 @@ function Login() {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                background: "linear-gradient(135deg,#667eea,#764ba2)",
+                padding: "20px",
+                boxSizing: "border-box",
+                background: "linear-gradient(135deg, #667eea, #764ba2)",
                 fontFamily: "Arial, sans-serif",
             }}
         >
             <div
                 style={{
-                    width: "380px",
+                    width: "100%",
+                    maxWidth: "380px",
                     background: "#fff",
                     padding: "35px",
                     borderRadius: "15px",
@@ -90,23 +105,22 @@ function Login() {
                     Login to your Watch Party account
                 </p>
 
-                <form onSubmit={handleSubmit} autoComplete="off">
+                <form onSubmit={handleSubmit}>
                     <label
-                        style={{
-                            fontWeight: "bold",
-                            color: "#444",
-                        }}
+                        htmlFor="email"
+                        style={{ fontWeight: "bold", color: "#444" }}
                     >
                         Email
                     </label>
 
                     <input
+                        id="email"
                         type="email"
                         name="email"
                         placeholder="Enter your email"
                         value={form.email}
                         onChange={handleChange}
-                        autoComplete="off"
+                        autoComplete="email"
                         required
                         style={{
                             width: "100%",
@@ -121,21 +135,20 @@ function Login() {
                     />
 
                     <label
-                        style={{
-                            fontWeight: "bold",
-                            color: "#444",
-                        }}
+                        htmlFor="password"
+                        style={{ fontWeight: "bold", color: "#444" }}
                     >
                         Password
                     </label>
 
                     <input
+                        id="password"
                         type="password"
                         name="password"
                         placeholder="Enter your password"
                         value={form.password}
                         onChange={handleChange}
-                        autoComplete="new-password"
+                        autoComplete="current-password"
                         required
                         style={{
                             width: "100%",
@@ -151,19 +164,20 @@ function Login() {
 
                     <button
                         type="submit"
+                        disabled={loading}
                         style={{
                             width: "100%",
                             padding: "12px",
-                            background: "#667eea",
+                            background: loading ? "#999" : "#667eea",
                             color: "#fff",
                             border: "none",
                             borderRadius: "8px",
                             fontSize: "17px",
                             fontWeight: "bold",
-                            cursor: "pointer",
+                            cursor: loading ? "not-allowed" : "pointer",
                         }}
                     >
-                        Login
+                        {loading ? "Logging in..." : "Login"}
                     </button>
                 </form>
 

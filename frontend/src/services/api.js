@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
- baseURL:"https://youtube-watch-party-system-1-y992.onrender.com/api" ,
+ baseURL: "https://youtube-watch-party-system-1-y992.onrender.com/api"
 
 });
 
