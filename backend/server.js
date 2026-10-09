@@ -4,11 +4,27 @@ dotenv.config();
 
 import express from "express";
 import http from "http";
+import cors from "cors";
 import { Server } from "socket.io";
+
 import app from "./app.js";
 import connectDB from "./config/db.js";
 import registerSocketHandlers from "./socket/socketHandler.js";
 import authRoutes from "./routes/authRoutes.js";
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://youtube-watch-party-system-weld.vercel.app",
+];
+
+// Configure CORS for Express API requests
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  })
+);
 
 app.use(express.json());
 
@@ -25,13 +41,12 @@ app.use("/api/auth", authRoutes);
 
 const server = http.createServer(app);
 
-const clientUrl =
-  process.env.CLIENT_URL?.trim() || "http://localhost:5173";
-
+// Configure CORS for Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: clientUrl,
+    origin: allowedOrigins,
     credentials: true,
+    methods: ["GET", "POST"],
   },
 });
 
