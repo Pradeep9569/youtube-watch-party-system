@@ -25,7 +25,7 @@ function ChatInput({ onSend , onTyping}) {
                 type="text"
                 value={text}
                 placeholder="Type message..."
-                value={text}
+                
                 onChange={handleChange}
             />
 
