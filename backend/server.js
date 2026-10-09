@@ -27,7 +27,7 @@ app.use(express.json());
 app.use("/api/auth" , authRoutes);
 
 registerSocketHandlers(io);
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT ||4001;
 
 server.listen(PORT, () => {
     console.log(` Server is running at http://localhost:${PORT}`);
