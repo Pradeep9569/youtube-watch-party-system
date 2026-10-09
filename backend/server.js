@@ -2,9 +2,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import express from "express";
 import http from "http";
-import cors from "cors";
 import { Server } from "socket.io";
 
 import app from "./app.js";
@@ -17,16 +15,8 @@ const allowedOrigins = [
   "https://youtube-watch-party-system-weld.vercel.app",
 ];
 
-// Configure CORS for Express API requests
-app.use(
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  })
-);
-
-app.use(express.json());
+// Authentication routes
+app.use("/api/auth", authRoutes);
 
 // Health-check route
 app.get("/", (req, res) => {
@@ -36,12 +26,8 @@ app.get("/", (req, res) => {
   });
 });
 
-// Authentication routes
-app.use("/api/auth", authRoutes);
-
 const server = http.createServer(app);
 
-// Configure CORS for Socket.IO
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
